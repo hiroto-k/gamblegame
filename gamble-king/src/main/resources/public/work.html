@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ギャンブル王 - バイト</title>
+    <link rel="stylesheet" href="/css/work.css">
+</head>
+<body>
+    <button class="btn-quit" onclick="quitWork()">← 辞める</button>
+
+    <button class="btn-item-menu" onclick="toggleItemMenu()">🎒 アイテム</button>
+
+    <div class="container">
+        <div class="money-display">
+            <span class="label">所持金:</span>
+            <span id="moneyText" class="amount">$ 0.0</span>
+        </div>
+
+        <div id="buffDisplay" class="buff-display" style="display: none;"></div>
+
+        <p class="instruction">グミをタップして軍資金を稼げ！</p>
+
+        <div class="gummy-container">
+            <div class="gummy" onclick="tapGummy(event)"></div>
+        </div>
+    </div>
+
+    <div id="itemModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>所持アイテム</h2>
+            <div class="item-list">
+                <div class="item-card">
+                    <div>🔮 カオス・ドリンク (所持: <span id="count-chaos">0</span>)</div>
+                    <small>効果: 50回タップの間、レア以上の確率がアップ</small>
+                    <button onclick="useItem('chaos')">使用</button>
+                </div>
+                <div class="item-card">
+                    <div>🧪 ゴールド・ワクチン (所持: <span id="count-legend">0</span>)</div>
+                    <small>効果: 50回タップの間、獲得マネーがすべて2倍</small>
+                    <button onclick="useItem('legend')">使用</button>
+                </div>
+                <div class="item-card">
+                    <div>🔋 エナジー・エール (所持: <span id="count-epic">0</span>)</div>
+                    <small>効果: 50回タップの間、最低獲得額が+0.5</small>
+                    <button onclick="useItem('epic')">使用</button>
+                </div>
+                <div class="item-card">
+                    <div>サンドイッチ (所持: <span id="count-rare">0</span>/ コモン: <span id="count-common">0</span>)</div>
+                    <small>※コモンやレアは今後のアップデートで合成等に使用可能</small>
+                </div>
+            </div>
+            <button class="btn-close" onclick="toggleItemMenu()">閉じる</button>
+        </div>
+    </div>
+
+    <script>
+        // 小数点対応のため、float型で管理
+        let currentMoney = parseFloat(localStorage.getItem('gk_money')) || 0.0;
+        
+        // アイテムインベントリの初期化（ローカルストレージ保存）
+        let items = JSON.parse(localStorage.getItem('gk_items')) || {
+            common: 0, rare: 0, epic: 0, legend: 0, chaos: 0
+        };
+
+        // バフ効果の管理
+        let activeBuff = null; 
+        let buffRemainingTaps = 0;
+
+        window.onload = function() {
+            updateUI();
+        };
+
+        function updateUI() {
+            document.getElementById('moneyText').innerText = `$ ${currentMoney.toFixed(2)}`;
+            localStorage.setItem('gk_money', currentMoney);
+            localStorage.setItem('gk_items', JSON.stringify(items));
+            
+            // アイテム数の表示更新
+            document.getElementById('count-common').innerText = items.common;
+            document.getElementById('count-rare').innerText = items.rare;
+            document.getElementById('count-epic').innerText = items.epic;
+            document.getElementById('count-legend').innerText = items.legend;
+            document.getElementById('count-chaos').innerText = items.chaos;
+
+            // バフ表示の更新
+            const buffDiv = document.getElementById('buffDisplay');
+            if (buffRemainingTaps > 0 && activeBuff) {
+                buffDiv.style.display = 'block';
+                buffDiv.innerText = `【発動中】${activeBuff.name} (残り ${buffRemainingTaps} タップ)`;
+            } else {
+                buffDiv.style.display = 'none';
+                activeBuff = null;
+            }
+        }
+
+        // --- 確率マネー抽選ロジック ---
+        function lotteryMoney() {
+            let rand = Math.random() * 100; // 0.0000〜100.0000の乱数
+            
+            // カオスドリンク使用時はレア・激レアの確率を10倍にする補正
+            let chaosModifier = (activeBuff && activeBuff.id === 'chaos') ? 10 : 1;
+
+            if (rand < 0.01 * chaosModifier) return 1000.0;
+            if (rand < (0.01 + 0.25) * chaosModifier) return 500.0;
+            if (rand < (0.01 + 0.25 + 0.5) * chaosModifier) return 100.0;
+            if (rand < (0.01 + 0.25 + 0.5 + 1.0) * chaosModifier) return 10.0;
+            if (rand < (0.01 + 0.25 + 0.5 + 1.0 + 2.0) * chaosModifier) return 5.0;
+            if (rand < (0.01 + 0.25 + 0.5 + 1.0 + 2.0 + 5.0)) return 1.0;
+            if (rand < (0.01 + 0.25 + 0.5 + 1.0 + 2.0 + 5.0 + 20.0)) return 0.5;
+            
+            return 0.1; // 残り（71.24%以上）
+        }
+
+        // --- タップ時のアイテムドロップ抽選 ---
+        function lotteryItemDrop() {
+            let rand = Math.random() * 100;
+
+            if (rand < 0.0001) return 'chaos';
+            if (rand < 0.05) return 'legend';
+            if (rand < 1.0) return 'epic';
+            if (rand < 3.0) return 'rare';
+            if (rand < 10.0) return 'common';
+            return null;
+        }
+
+        // --- メインタップ処理 ---
+        // --- メインタップ処理 ---
+        function tapGummy(event) {
+            // 1. 金額の抽選とバフ適用
+            let earned = lotteryMoney();
+
+            if (activeBuff) {
+                if (activeBuff.id === 'epic' && earned === 0.1) earned = 0.5; // 最低保証
+                if (activeBuff.id === 'legend') earned *= 2; // 金額2倍
+                
+                buffRemainingTaps--;
+            }
+
+            // 【修正】計算時の丸め誤差を排除（100倍して四捨五入してから100で割る）
+            currentMoney = Math.round((currentMoney + earned) * 100) / 100;
+
+            // 2. アイテムドロップ処理
+            let droppedItem = lotteryItemDrop();
+            if (droppedItem) {
+                items[droppedItem]++;
+                createFloatingText(event.clientX, event.clientY - 30, `🎁 ${droppedItem.toUpperCase()} ITEM!`, 'item-drop-text');
+            }
+
+            // UI更新
+            updateUI();
+
+            // ぷるぷるアニメーション
+            const gummy = event.target;
+            gummy.classList.remove('pulse');
+            void gummy.offsetWidth; 
+            gummy.classList.add('pulse');
+
+            // 浮き出る金額の演出
+            createFloatingText(event.clientX, event.clientY, `+${earned}`, 'money-drop-text');
+        }
+
+        // エフェクトテキスト生成
+        function createFloatingText(x, y, textString, className) {
+            const text = document.createElement('div');
+            text.className = `floating-text ${className}`;
+            text.innerText = textString;
+            text.style.left = `${x}px`;
+            text.style.top = `${y}px`;
+            document.body.appendChild(text);
+            setTimeout(() => { text.remove(); }, 900);
+        }
+
+        // --- アイテムシステム ---
+        function toggleItemMenu() {
+            const modal = document.getElementById('itemModal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function useItem(itemType) {
+            if (items[itemType] <= 0) {
+                alert("アイテムを持っていません！");
+                return;
+            }
+            
+            items[itemType]--;
+            buffRemainingTaps = 50; // 50回有効
+
+            if (itemType === 'chaos') {
+                activeBuff = { id: 'chaos', name: 'カオス・超幸運 (レア確率10倍)' };
+            } else if (itemType === 'legend') {
+                activeBuff = { id: 'legend', name: 'ゴールド・ブースト (マネー2倍)' };
+            } else if (itemType === 'epic') {
+                activeBuff = { id: 'epic', name: 'エナジー・最低保証 (最低値が0.5に)' };
+            }
+
+            toggleItemMenu();
+            updateUI();
+        }
+
+        function quitWork() {
+            window.location.href = '/home';
+        }
+    </script>
+</body>
+</html>

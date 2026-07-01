@@ -1,0 +1,282 @@
+:root {
+    --avatar-skin: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #0b0c10;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ユーザーネーム入力欄のデザイン */
+.username-container {
+    margin-top: 10px;
+    margin-bottom: 5px; /* エラー表示のために少し縮小 */
+    width: 80%;
+    max-width: 260px;
+    position: relative;
+}
+
+#usernameInput {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ffd700;
+    background-color: #1f2833;
+    border: 2px dashed #ffd700;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+    transition: all 0.2s;
+}
+
+#usernameInput:focus {
+    outline: none;
+    border-style: solid;
+    background-color: #0b0c10;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+/* ★追加: 入力エラー時の赤枠化クラス */
+.input-error {
+    color: #ef4444 !important;
+    border-color: #ef4444 !important;
+    background-color: #2d1a1a !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5) !important;
+}
+
+/* ★追加: エラー警告メッセージ用スタイル */
+.name-error-message {
+    color: #ef4444;
+    font-size: 0.8rem;
+    height: 16px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+/* 所持金表示 */
+.money-wrapper {
+    background-color: #1f2833;
+    padding: 10px 30px;
+    border-radius: 20px;
+    display: inline-block;
+    border: 2px solid #ffd700;
+    margin-bottom: -5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    position: relative;
+    z-index: 5;
+}
+
+#homeMoneyText {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* アバターコンテナ */
+.avatar-container {
+    height: 210px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.avatar {
+    position: relative;
+    width: 100px;
+    height: 200px;
+}
+
+/* アバター頭部 */
+.avatar .head {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at 35% 35%, #fff 0%, var(--avatar-skin) 60%, #555 100%);
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+}
+
+/* 顔パーツ（目） */
+.avatar .face-eye {
+    width: 6px;
+    height: 6px;
+    background-color: #111111;
+    border-radius: 50%;
+    position: absolute;
+    top: 24px;
+}
+.avatar .eye-left { left: 18px; }
+.avatar .eye-right { right: 18px; }
+
+/* 顔パーツ（口） */
+.avatar .face-mouth {
+    width: 14px;
+    height: 6px;
+    border-bottom: 3px solid #111111;
+    border-radius: 0 0 7px 7px;
+    position: absolute;
+    top: 32px;
+    left: 23px;
+}
+
+/* アバター体・四肢 */
+.avatar .body-torso {
+    width: 50px;
+    height: 80px;
+    background: linear-gradient(to right, #555, var(--avatar-skin) 50%, #222);
+    border-radius: 20px;
+    position: absolute;
+    top: 75px;
+    left: 25px;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+}
+
+.avatar .arm {
+    width: 18px;
+    height: 70px;
+    background: linear-gradient(to bottom, var(--avatar-skin), #333);
+    border-radius: 10px;
+    position: absolute;
+    top: 80px;
+}
+.avatar .arm-left { left: 2px; transform: rotate(15deg); }
+.avatar .arm-right { right: 2px; transform: rotate(-15deg); }
+
+.avatar .leg {
+    width: 20px;
+    height: 80px;
+    background: linear-gradient(to bottom, var(--avatar-skin), #222);
+    border-radius: 10px;
+    position: absolute;
+    top: 145px;
+}
+.avatar .leg-left { left: 23px; }
+.avatar .leg-right { right: 23px; }
+
+/* ボタンエリア */
+.navigation-area {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    width: 100%;
+}
+
+.btn {
+    width: 80%;
+    max-width: 300px;
+    padding: 14px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+.btn:active {
+    transform: scale(0.98);
+}
+.btn:disabled {
+    background: #475569 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.btn-lobby {
+    background: linear-gradient(135deg, #ffd700, #b8860b);
+    color: #000000;
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.btn-work {
+    background: linear-gradient(135deg, #4f5d75, #2d3748);
+    color: #ffffff;
+    box-shadow: 0 5px 15px rgba(79, 93, 117, 0.3);
+}
+
+.btn-custom {
+    background: linear-gradient(135deg, #a0aec0, #4a5568);
+    color: #ffffff;
+    box-shadow: 0 5px 15px rgba(160, 174, 192, 0.3);
+}
+
+/* ポップアップ */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.overlay-content {
+    background-color: #1f2833;
+    padding: 30px;
+    border-radius: 20px;
+    border: 2px solid #ffd700;
+    width: 85%;
+    max-width: 400px;
+}
+
+.overlay-content button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 12px 0;
+    background-color: #0b0c10;
+    color: #ffffff;
+    border: 1px solid #ffd700;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.color-options {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+.color-options button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    cursor: pointer;
+}
+
+.overlay-content .btn-close {
+    background-color: #ff3333;
+    border: none;
+}

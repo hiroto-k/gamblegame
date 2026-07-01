@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ギャンブル王 - じゃんけん</title>
+    <link rel="stylesheet" href="/css/janken.css">
+</head>
+<body>
+    <button class="btn-back" onclick="goBack()">← ロビーへ戻る</button>
+
+    <div class="container">
+        <div class="money-box">
+            軍資金: <span id="jankenMoneyText">$ 0.00</span>
+        </div>
+
+        <h1 class="game-title">✊ 漢のジャンケン ✋</h1>
+
+        <div id="step-bet" class="game-section">
+            <p class="section-desc">いくら賭ける？（1ドル以上）</p>
+            <input type="number" id="betInput" min="1" placeholder="金額を入力">
+            <button class="btn btn-action" onclick="confirmBet()">勝負へ進む</button>
+        </div>
+
+        <div id="step-choice" class="game-section" style="display: none;">
+            <p class="section-desc">現在の賭け金: <span id="displayBet" style="color: #eab308; font-weight: bold;">$0</span></p>
+            <p class="section-desc">出す手を選べ！（勝てば2倍、引き分けは返金）</p>
+            <div class="janken-buttons">
+                <button class="janken-btn btn-goo" onclick="playJanken(0)"><span class="janken-emoji">✊</span><br>グー</button>
+                <button class="janken-btn btn-choki" onclick="playJanken(1)"><span class="janken-emoji">✌️</span><br>チョキ</button>
+                <button class="janken-btn btn-paa" onclick="playJanken(2)"><span class="janken-emoji">✋</span><br>パー</button>
+            </div>
+        </div>
+
+        <div id="step-result" class="game-section" style="display: none;">
+            <div class="battle-arena">
+                <div id="playerHandBox" class="hand-display">
+                    <span class="hand-label">あなた</span>
+                    <span id="playerHandEmoji" class="hand-emoji">✊</span>
+                </div>
+                <div class="vs-text">VS</div>
+                <div id="dealerHandBox" class="hand-display">
+                    <span class="hand-label">ディーラー</span>
+                    <span id="dealerHandEmoji" class="hand-emoji">✊</span>
+                </div>
+            </div>
+
+            <h2 id="resultStatus" class="result-status"></h2>
+            <p id="resultMessage" class="result-details"></p>
+
+            <button id="btnRestart" class="btn btn-action" onclick="resetGame()" style="display: none;">もう一度勝負する</button>
+        </div>
+    </div>
+
+    <script>
+        let myMoney = parseFloat(localStorage.getItem('gk_money')) || 0.0;
+        let currentBet = 0;
+        const handEmojis = ['✊', '✌️', '✋'];
+        const handNames = ['グー', 'チョキ', 'パー'];
+
+        window.onload = function() {
+            updateMoneyDisplay();
+        };
+
+        function updateMoneyDisplay() {
+            document.getElementById('jankenMoneyText').innerText = `$ ${myMoney.toFixed(2)}`;
+            localStorage.setItem('gk_money', myMoney);
+        }
+
+        function confirmBet() {
+            const input = document.getElementById('betInput');
+            currentBet = parseInt(input.value) || 0;
+
+            if (currentBet <= 0) {
+                alert("1ドル以上を賭けてください。");
+                return;
+            }
+            if (currentBet > myMoney) {
+                alert("軍資金が足りません！");
+                return;
+            }
+
+            document.getElementById('displayBet').innerText = `$ ${currentBet}`;
+            document.getElementById('step-bet').style.display = 'none';
+            document.getElementById('step-choice').style.display = 'block';
+        }
+
+        // ★演出つきのじゃんけん実行ロジック
+        function playJanken(playerChoice) {
+            // 先に軍資金から引く
+            myMoney = Math.round((myMoney - currentBet) * 100) / 100;
+            updateMoneyDisplay();
+
+            document.getElementById('step-choice').style.display = 'none';
+            document.getElementById('step-result').style.display = 'block';
+
+            const playerBox = document.getElementById('playerHandBox');
+            const dealerBox = document.getElementById('dealerHandBox');
+            const playerEmoji = document.getElementById('playerHandEmoji');
+            const dealerEmoji = document.getElementById('dealerHandEmoji');
+            const statusText = document.getElementById('resultStatus');
+            const detailText = document.getElementById('resultMessage');
+            const restartBtn = document.getElementById('btnRestart');
+
+            // 初期状態リセット
+            playerEmoji.innerText = '✊';
+            dealerEmoji.innerText = '✊';
+            statusText.innerText = "じゃん・けん・・・";
+            detailText.innerText = "";
+            restartBtn.style.display = 'none';
+
+            // 「じゃんけん」のシェイク（揺れ）アニメーションを開始
+            playerBox.classList.add('shaking');
+            dealerBox.classList.add('shaking');
+
+            // ディーラーの手をシャッフルする視覚演出
+            let shuffleCount = 0;
+            let shuffleInterval = setInterval(() => {
+                dealerEmoji.innerText = handEmojis[Math.floor(Math.random() * 3)];
+                shuffleCount++;
+                if (shuffleCount > 10) {
+                    clearInterval(shuffleInterval);
+                }
+            }, 100);
+
+            // 1.2秒後に「ぽん！」と出して結果判定
+            setTimeout(() => {
+                // 揺れを止める
+                playerBox.classList.remove('shaking');
+                dealerBox.classList.remove('shaking');
+
+                // ディーラーの手を確定
+                const dealerChoice = Math.floor(Math.random() * 3);
+                
+                // 確定した手を表示
+                playerEmoji.innerText = handEmojis[playerChoice];
+                dealerEmoji.innerText = handEmojis[dealerChoice];
+
+                // 判定ロジック (0:あいこ, 1:負け, 2:勝ち)
+                const result = (playerChoice - dealerChoice + 3) % 3;
+
+                if (result === 0) {
+                    myMoney = Math.round((myMoney + currentBet) * 100) / 100;
+                    statusText.innerHTML = `<span class="draw-text">🤝 ぽん！ 引き分け 🤝</span>`;
+                    detailText.innerText = `両者 ${handNames[playerChoice]} でドロー。賭け金 $ ${currentBet} は返却されます。`;
+                } else if (result === 2) {
+                    let winnings = currentBet * 2;
+                    myMoney = Math.round((myMoney + winnings) * 100) / 100;
+                    statusText.innerHTML = `<span class="win-text">🎉 ぽん！ あなたの勝ち！ 🎉</span>`;
+                    detailText.innerHTML = `ディーラーは ${handNames[dealerChoice]} でした！ <strong>+$ ${winnings.toFixed(2)}</strong> 獲得！`;
+                    playerBox.classList.add('winner-flash');
+                } else {
+                    statusText.innerHTML = `<span class="lose-text">💀 ぽん！ あなたの負け 💀</span>`;
+                    detailText.innerText = `ディーラーは ${handNames[dealerChoice]} でした。賭け金 $ ${currentBet} は没収されました。`;
+                    dealerBox.classList.add('winner-flash');
+                }
+
+                updateMoneyDisplay();
+                restartBtn.style.display = 'inline-block';
+            }, 1200);
+        }
+
+        function resetGame() {
+            document.getElementById('playerHandBox').className = 'hand-display';
+            document.getElementById('dealerHandBox').className = 'hand-display';
+            document.getElementById('step-result').style.display = 'none';
+            document.getElementById('step-bet').style.display = 'block';
+            document.getElementById('betInput').value = '';
+        }
+
+        function goBack() {
+            window.location.href = '/game/lobby';
+        }
+    </script>
+</body>
+</html>

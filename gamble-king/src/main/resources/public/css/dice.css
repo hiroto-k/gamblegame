@@ -1,0 +1,227 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #090b11;
+    color: #f1f5f9;
+    font-family: 'Arial Black', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    background-color: #131722;
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+    text-align: center;
+    border: 2px solid #ffcc00;
+}
+
+.money-box {
+    background-color: #090b11;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    color: #ffcc00;
+    border: 1px solid #ffcc00;
+    display: inline-block;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.game-title {
+    font-size: 2rem;
+    color: #ffcc00;
+    text-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+    margin-bottom: 25px;
+}
+
+.game-section {
+    background-color: #1c2333;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #2e394d;
+}
+
+/* 金額インプット */
+#betInput, #sumInput {
+    width: 80%;
+    padding: 12px;
+    font-size: 1.4rem;
+    border-radius: 12px;
+    border: 2px solid #475569;
+    background-color: #090b11;
+    color: white;
+    text-align: center;
+    margin-bottom: 15px;
+}
+#betInput:focus, #sumInput:focus {
+    border-color: #ffcc00;
+    outline: none;
+}
+
+/* リアルタイムサイコロコンテナ */
+.dice-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 15px 0;
+    min-height: 60px;
+}
+
+/* サイコロのデザイン */
+.dice {
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 70%, #cbd5e1 100%);
+    color: #0f172a;
+    font-size: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.4);
+    font-weight: normal;
+}
+
+.dice.dummy {
+    background: transparent;
+    color: #475569;
+    border: 2px dashed #475569;
+    box-shadow: none;
+    font-size: 1.2rem;
+}
+
+/* ルール・モード選択ボタン */
+.mode-select-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 12px;
+    background-color: #090b11;
+    border: 2px solid #475569;
+    color: #94a3b8;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.mode-btn.active {
+    border-color: #ffcc00;
+    color: #ffcc00;
+    background-color: #1c2333;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+}
+
+.inputs-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 15px 0;
+}
+
+.each-dice-input {
+    width: 45px;
+    padding: 8px;
+    font-size: 1.2rem;
+    text-align: center;
+    background-color: #090b11;
+    border: 2px solid #475569;
+    color: white;
+    border-radius: 8px;
+}
+.each-dice-input:focus { border-color: #ffcc00; outline: none; }
+
+.rate-info {
+    margin: 15px 0;
+    color: #94a3b8;
+    font-size: 0.95rem;
+}
+.rate { color: #22c55e; font-size: 1.4rem; font-weight: bold; }
+
+/* サイコロ落下アリーナ */
+.dice-arena {
+    height: 160px;
+    background-color: #090b11;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    overflow: hidden;
+    padding: 10px;
+    border: 1px solid #2e394d;
+}
+
+/* 落下＋転がる超リッチアニメーション */
+.dice.rolling {
+    animation: diceDropRoll 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    transform-origin: center center;
+}
+
+@keyframes diceDropRoll {
+    0% {
+        transform: translateY(-200px) rotate(0deg) scale(2);
+        opacity: 0;
+    }
+    50% {
+        transform: translateY(0px) translateX(calc(var(--target-x) / 2)) rotate(360deg) scale(0.8);
+        opacity: 1;
+    }
+    70% {
+        transform: translateY(-20px) translateX(calc(var(--target-x) * 0.8)) rotate(540deg) scale(1.1);
+    }
+    100% {
+        transform: translateY(0px) translateX(var(--target-x)) rotate(720deg) scale(1);
+    }
+}
+
+.dice.settled {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 5px 10px rgba(0,0,0,0.4);
+    transition: all 0.2s;
+}
+
+/* 結果テキスト */
+.result-status { margin-top: 15px; font-size: 1.6rem; }
+.win-text { color: #4ade80; text-shadow: 0 0 10px rgba(74,222,128,0.4); }
+.lose-text { color: #f87171; text-shadow: 0 0 10px rgba(248,113,113,0.4); }
+.result-details { color: #94a3b8; line-height: 1.6; margin-bottom: 20px; }
+
+/* ボタン類 */
+.btn {
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    width: 80%;
+    margin-top: 10px;
+}
+.btn:disabled { background-color: #475569; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+.btn-action { background-color: #ffcc00; color: #000; box-shadow: 0 4px 10px rgba(255,204,0,0.3); }
+.btn-continue { background-color: #22c55e; color: white; box-shadow: 0 4px 10px rgba(34,197,94,0.3); }
+
+.btn-back {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: #1c2333;
+    color: white;
+    border: 1px solid #2e394d;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
