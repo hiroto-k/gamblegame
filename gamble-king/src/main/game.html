@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ギャンブル王 - ゲーム選択</title>
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <button class="btn-back" onclick="goBack()">← ホームへ戻る</button>
+
+    <div class="container">
+        <div class="money-display">
+            <span class="label">軍資金:</span>
+            <span id="menuMoneyText" class="amount">$ 0</span>
+        </div>
+
+        <h1 class="menu-title">CHOOSE A GAME</h1>
+        <div class="game-grid">
+            
+            <div class="game-item" onclick="selectGame('roulette')">
+                <button class="game-box btn-race">
+                    <span class="emoji">🎡</span>
+                </button>
+                <span class="game-name">ルーレット</span>
+            </div>
+
+            <div class="game-item" onclick="selectGame('dice')">
+                <button class="game-box btn-dice">
+                    <span class="emoji">🎲</span>
+                </button>
+                <span class="game-name">ダイス</span>
+            </div>
+
+            <div class="game-item" onclick="selectGame('janken')">
+                <button class="game-box btn-janken">
+                    <span class="emoji">✊</span>
+                </button>
+                <span class="game-name">じゃんけん</span>
+            </div>
+
+            <div class="game-item">
+                <button class="game-box btn-locked" disabled>
+                    <span class="emoji">🔒</span>
+                </button>
+                <span class="game-name">Coming Soon</span>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            let currentMoney = parseFloat(localStorage.getItem('gk_money')) || 0.0;
+            document.getElementById('menuMoneyText').innerText = `$ ${currentMoney.toFixed(2)}`;
+        }
+
+        function selectGame(gameType) {
+            window.location.href = gameType + '.html'; // 修正箇所
+        }
+
+        function goBack() {
+            window.location.href = 'home.html'; // 修正箇所
+        }
+    </script>
+</body>
+</html>

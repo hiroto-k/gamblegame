@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ギャンブル王 - ホーム</title>
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <div class="container">
+        
+        <div class="username-container">
+            <input type="text" id="usernameInput" value="プレイヤー" placeholder="名前を入力" maxlength="10" oninput="validateUsername()">
+            <div id="usernameError" class="name-error-message"></div>
+        </div>
+
+        <div class="money-wrapper">
+            所持金: <span id="homeMoneyText">$ 0</span>
+        </div>
+
+        <div class="avatar-container">
+            <div class="avatar">
+                <div class="head">
+                    <div class="face-eye eye-left"></div>
+                    <div class="face-eye eye-right"></div>
+                    <div class="face-mouth"></div>
+                </div>
+                <div class="body-torso"></div>
+                <div class="arm arm-left"></div>
+                <div class="arm arm-right"></div>
+                <div class="leg leg-left"></div>
+                <div class="leg leg-right"></div>
+            </div>
+        </div>
+
+        <div class="navigation-area">
+            <button id="btnLobby" class="btn btn-lobby" onclick="toggleOverlay('gameOverlay')">ゲームへ移行</button>
+            <button id="btnWork" class="btn btn-work" onclick="goToWork()">バイトする</button>
+            <button id="btnCustom" class="btn btn-custom" onclick="toggleOverlay('customOverlay')">カスタマイズ</button>
+        </div>
+
+        <div id="gameOverlay" class="overlay">
+            <div class="overlay-content">
+                <h2>プレイするゲームを選択</h2>
+                <button onclick="goToGame('slot')">🎰 スロット</button>
+                <button onclick="goToGame('dice')">🎲 ダイスゲーム</button>
+                <button onclick="goToGame('cards')">🃏 カードゲーム</button>
+                <br>
+                <button class="btn-close" onclick="toggleOverlay('gameOverlay')">閉じる</button>
+            </div>
+        </div>
+
+        <div id="customOverlay" class="overlay">
+            <div class="overlay-content">
+                <h2>アバターカラー変更</h2>
+                <p>好きな色を選択してください</p>
+                <div class="color-options">
+                    <button onclick="changeColor('#ffffff')" style="background-color: #ffffff;"></button>
+                    <button onclick="changeColor('#ff8888')" style="background-color: #ff8888;"></button>
+                    <button onclick="changeColor('#88ff88')" style="background-color: #88ff88;"></button>
+                    <button onclick="changeColor('#8888ff')" style="background-color: #8888ff;"></button>
+                    <button onclick="changeColor('#ffd700')" style="background-color: #ffd700;"></button>
+                </div>
+                <br>
+                <button class="btn-close" onclick="toggleOverlay('customOverlay')">決定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            let currentMoney = parseFloat(localStorage.getItem('gk_money')) || 0.0;
+            document.getElementById('homeMoneyText').innerText = `$ ${currentMoney.toFixed(2)}`;
+
+            let savedName = localStorage.getItem('gk_username');
+            if (savedName !== null && savedName !== "") {
+                document.getElementById('usernameInput').value = savedName;
+            }
+            validateUsername();
+        }
+
+        function validateUsername() {
+            const input = document.getElementById('usernameInput');
+            const errorDiv = document.getElementById('usernameError');
+            let nameVal = input.value;
+
+            // 半角・全角スペースやタブも包括して許可する正規表現に強化
+            const allowedPattern = /^[a-zA-Z0-9\s亜-熙ぁ-んァ-ヶー]*$/;
+
+            let isValid = true;
+            let errorMsg = "";
+
+            if (nameVal.length < 1) {
+                isValid = false;
+                errorMsg = "最低1文字入力してください";
+            } else if (nameVal.length > 10) {
+                isValid = false;
+                errorMsg = "最大10文字までです";
+            } else if (!allowedPattern.test(nameVal)) {
+                isValid = false;
+                errorMsg = "使用不可な文字（記号等）が含まれています";
+            }
+
+            if (!isValid) {
+                input.classList.add('input-error');
+                errorDiv.innerText = errorMsg;
+                document.getElementById('btnLobby').disabled = true;
+                document.getElementById('btnWork').disabled = true;
+                document.getElementById('btnCustom').disabled = true;
+            } else {
+                input.classList.remove('input-error');
+                errorDiv.innerText = "";
+                document.getElementById('btnLobby').disabled = false;
+                document.getElementById('btnWork').disabled = false;
+                document.getElementById('btnCustom').disabled = false;
+                localStorage.setItem('gk_username', nameVal);
+            }
+        }
+
+        function toggleOverlay(id) {
+            if (id === 'gameOverlay') {
+                window.location.href = 'game.html';
+            } else {
+                const overlay = document.getElementById(id);
+                overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+            }
+        }
+
+        // アバターの肌の色をリアルタイムに変更
+        function changeColor(color) {
+            document.documentElement.style.setProperty('--avatar-skin', color);
+        }
+
+        function goToGame(gameType) {
+            window.location.href = gameType + '.html';
+        }
+
+        function goToWork() {
+            window.location.href = 'work.html';
+        }
+    </script>
+</body>
+</html>

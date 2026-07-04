@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ギャンブル王 - バイト</title>
+    <link rel="stylesheet" href="css/work.css">
+</head>
+<body>
+    <button class="btn-quit" onclick="quitWork()">← 辞める</button>
+
+    <button class="btn-item-menu" onclick="toggleItemMenu()">🎒 アイテム</button>
+
+    <div class="container">
+        <div class="money-display">
+            <span class="label">所持金:</span>
+            <span id="moneyText" class="amount">$ 0.00</span>
+        </div>
+
+        <div id="buffDisplay" class="buff-display" style="display: none;"></div>
+
+        <p class="instruction">宝箱をタップして軍資金を稼げ！</p>
+
+        <div class="treasure-container">
+            <div class="treasure-box" onclick="tapTreasure(event)">📦</div>
+        </div>
+    </div>
+
+    <div id="itemModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>所持アイテム</h2>
+            <div class="item-list">
+                <div class="item-card">
+                    <div>⚡ エナジードリンク (所持: <span id="count-energyDrink">0</span>)</div>
+                    <small>効果: 1分間 獲得金額を30倍</small>
+                    <button onclick="useItem('energyDrink')">使用</button>
+                </div>
+                <div class="item-card">
+                    <div>🍀 幸運のお守り (所持: <span id="count-luckyCharm">0</span>)</div>
+                    <small>効果: 100クリック 獲得金額を35倍</small>
+                    <button onclick="useItem('luckyCharm')">使用</button>
+                </div>
+                <div class="item-card">
+                    <div>💪 パーフェクトアーム (所持: <span id="count-perfectArm">0</span>)</div>
+                    <small>効果: 2分間 1タップ10クリック化＆金額10倍</small>
+                    <button onclick="useItem('perfectArm')">使用</button>
+                </div>
+                <div class="item-card">
+                    <div>👁️ ゴッドアイ (所持: <span id="count-godEye">0</span>)</div>
+                    <small>効果: 20クリック 最高額(1000)確定＆金額100倍</small>
+                    <button onclick="useItem('godEye')">使用</button>
+                </div>
+            </div>
+            <button class="btn-close" onclick="toggleItemMenu()">閉じる</button>
+        </div>
+    </div>
+
+    <script>
+        let currentMoney = parseFloat(localStorage.getItem('gk_money')) || 0.0;
+        
+        let items = JSON.parse(localStorage.getItem('gk_items')) || {};
+        if(items.energyDrink === undefined) items.energyDrink = 0;
+        if(items.luckyCharm === undefined) items.luckyCharm = 0;
+        if(items.perfectArm === undefined) items.perfectArm = 0;
+        if(items.godEye === undefined) items.godEye = 0;
+
+        let buffs = {
+            energyDrink: { active: false, endTime: 0 },
+            luckyCharm: { active: false, remainingTaps: 0 },
+            perfectArm: { active: false, endTime: 0 },
+            godEye: { active: false, remainingTaps: 0 }
+        };
+
+        window.onload = function() {
+            updateUI();
+            setInterval(updateBuffUI, 1000);
+        };
+
+        function updateUI() {
+            // ★ 所持金の表示に3桁ごとのカンマを追加 (.toLocaleStringを使用)
+            document.getElementById('moneyText').innerText = `$ ${currentMoney.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            localStorage.setItem('gk_money', currentMoney);
+            localStorage.setItem('gk_items', JSON.stringify(items));
+            
+            document.getElementById('count-energyDrink').innerText = items.energyDrink;
+            document.getElementById('count-luckyCharm').innerText = items.luckyCharm;
+            document.getElementById('count-perfectArm').innerText = items.perfectArm;
+            document.getElementById('count-godEye').innerText = items.godEye;
+            
+            updateBuffUI();
+        }
+
+        function updateBuffUI() {
+            const now = Date.now();
+            let buffTexts = [];
+            
+            if (buffs.energyDrink.active) {
+                if (buffs.energyDrink.endTime > now) {
+                    let remain = Math.ceil((buffs.energyDrink.endTime - now) / 1000);
+                    buffTexts.push(`⚡ エナジー (残り ${remain}秒)`);
+                } else {
+                    buffs.energyDrink.active = false;
+                }
+            }
+            if (buffs.perfectArm.active) {
+                if (buffs.perfectArm.endTime > now) {
+                    let remain = Math.ceil((buffs.perfectArm.endTime - now) / 1000);
+                    buffTexts.push(`💪 パーフェクト (残り ${remain}秒)`);
+                } else {
+                    buffs.perfectArm.active = false;
+                }
+            }
+            if (buffs.luckyCharm.active) {
+                if (buffs.luckyCharm.remainingTaps > 0) {
+                    buffTexts.push(`🍀 幸運 (残り ${buffs.luckyCharm.remainingTaps}回)`);
+                } else {
+                    buffs.luckyCharm.active = false;
+                }
+            }
+            if (buffs.godEye.active) {
+                if (buffs.godEye.remainingTaps > 0) {
+                    buffTexts.push(`👁️ ゴッドアイ (残り ${buffs.godEye.remainingTaps}回)`);
+                } else {
+                    buffs.godEye.active = false;
+                }
+            }
+            
+            const buffDiv = document.getElementById('buffDisplay');
+            if (buffTexts.length > 0) {
+                buffDiv.style.display = 'block';
+                buffDiv.innerHTML = buffTexts.join('<br>');
+            } else {
+                buffDiv.style.display = 'none';
+            }
+        }
+
+        function lotteryMoney() {
+            let rand = Math.random() * 100; 
+            if (rand < 0.01) return 1000.0;
+            if (rand < 0.26) return 500.0;
+            if (rand < 0.76) return 100.0;
+            if (rand < 1.76) return 10.0;
+            if (rand < 3.76) return 5.0;
+            if (rand < 8.76) return 1.0;
+            if (rand < 28.76) return 0.5;
+            return 0.1; 
+        }
+
+        function lotteryItemDrop() {
+            let rand = Math.random() * 100;
+            if (rand < 0.01) return 'godEye';
+            if (rand < 0.51) return 'perfectArm';
+            if (rand < 1.51) return 'luckyCharm';
+            if (rand < 2.51) return 'energyDrink';
+            return null;
+        }
+
+        function useItem(type) {
+            if (items[type] <= 0) {
+                alert("アイテムを持っていません！");
+                return;
+            }
+            
+            items[type]--;
+            const now = Date.now();
+
+            if (type === 'energyDrink') {
+                if (buffs.energyDrink.active && buffs.energyDrink.endTime > now) {
+                    buffs.energyDrink.endTime += 60000; 
+                } else {
+                    buffs.energyDrink.active = true;
+                    buffs.energyDrink.endTime = now + 60000;
+                }
+            } else if (type === 'luckyCharm') {
+                buffs.luckyCharm.active = true;
+                buffs.luckyCharm.remainingTaps += 100; 
+            } else if (type === 'perfectArm') {
+                if (buffs.perfectArm.active && buffs.perfectArm.endTime > now) {
+                    buffs.perfectArm.endTime += 120000; 
+                } else {
+                    buffs.perfectArm.active = true;
+                    buffs.perfectArm.endTime = now + 120000;
+                }
+            } else if (type === 'godEye') {
+                buffs.godEye.active = true;
+                buffs.godEye.remainingTaps += 20; 
+            }
+
+            updateUI();
+        }
+
+        function tapTreasure(event) {
+            const now = Date.now();
+            
+            if (buffs.energyDrink.endTime <= now) buffs.energyDrink.active = false;
+            if (buffs.perfectArm.endTime <= now) buffs.perfectArm.active = false;
+
+            let clicks = buffs.perfectArm.active ? 10 : 1;
+            let totalEarned = 0;
+            let droppedItems = {};
+
+            for (let i = 0; i < clicks; i++) {
+                let earned = 0;
+                
+                let isGodEyeActive = buffs.godEye.active && buffs.godEye.remainingTaps > 0;
+                if (isGodEyeActive) {
+                    earned = 1000.0;
+                    buffs.godEye.remainingTaps--;
+                } else {
+                    earned = lotteryMoney();
+                }
+
+                let multiplier = 1;
+                
+                if (buffs.energyDrink.active) multiplier *= 30;
+                
+                let isLuckyCharmActive = buffs.luckyCharm.active && buffs.luckyCharm.remainingTaps > 0;
+                if (isLuckyCharmActive) {
+                    multiplier *= 35;
+                    buffs.luckyCharm.remainingTaps--;
+                }
+                
+                if (buffs.perfectArm.active) multiplier *= 10;
+                
+                if (isGodEyeActive) multiplier *= 100;
+
+                totalEarned += (earned * multiplier);
+
+                let droppedItem = lotteryItemDrop();
+                if (droppedItem) {
+                    items[droppedItem]++;
+                    if (!droppedItems[droppedItem]) droppedItems[droppedItem] = 0;
+                    droppedItems[droppedItem]++;
+                }
+            }
+
+            currentMoney = Math.round((currentMoney + totalEarned) * 100) / 100;
+            
+            updateUI();
+
+            const box = event.currentTarget;
+            box.classList.remove('pulse');
+            void box.offsetWidth; 
+            box.classList.add('pulse');
+
+            // ★ 飛び出す金額のテキストにも3桁区切りのカンマを追加
+            createFloatingText(event.clientX, event.clientY, `+${totalEarned.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`, 'money-drop-text');
+
+            let dropYOffset = 30;
+            for (let key in droppedItems) {
+                let itemName = getItemName(key);
+                createFloatingText(event.clientX, event.clientY - dropYOffset, `🎁 ${itemName} GET! x${droppedItems[key]}`, 'item-drop-text');
+                dropYOffset += 25;
+            }
+        }
+
+        function getItemName(key) {
+            switch(key) {
+                case 'energyDrink': return 'エナジードリンク';
+                case 'luckyCharm': return '幸運のお守り';
+                case 'perfectArm': return 'パーフェクトアーム';
+                case 'godEye': return 'ゴッドアイ';
+            }
+            return key;
+        }
+
+        function createFloatingText(x, y, textString, className) {
+            const text = document.createElement('div');
+            text.className = `floating-text ${className}`;
+            text.innerText = textString;
+            text.style.left = `${x}px`;
+            text.style.top = `${y}px`;
+            document.body.appendChild(text);
+            setTimeout(() => { text.remove(); }, 900);
+        }
+
+        function toggleItemMenu() {
+            const modal = document.getElementById('itemModal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // ★ 辞めるボタンが押された時の処理を強化
+        function quitWork() {
+            // いずれかのバフが発動中か判定する
+            const isAnyBuffActive = buffs.energyDrink.active || buffs.luckyCharm.active || buffs.perfectArm.active || buffs.godEye.active;
+            
+            if (isAnyBuffActive) {
+                // コンファームダイアログを表示（キャンセルを押すとそのまま画面に残る）
+                const confirmQuit = confirm("⚠️ 現在アイテムの効果が発動中です！\nバイトを辞めると残りの効果は消えてしまいますが、本当に辞めますか？");
+                if (!confirmQuit) {
+                    return; 
+                }
+            }
+            
+            // 問題なければホームへ戻る
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>
