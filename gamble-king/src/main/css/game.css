@@ -1,0 +1,137 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d0e15;
+    color: #ffffff;
+    font-family: 'Arial Black', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.btn-back {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: #334155;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-back:hover {
+    background-color: #475569;
+}
+
+.container {
+    text-align: center;
+    width: 100%;
+    max-width: 500px; /* 全体を少しワイドに */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 所持金カウンター */
+.money-display {
+    background: #161b26;
+    padding: 10px 25px;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    margin-bottom: 35px;
+}
+.money-display .amount {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.menu-title {
+    font-size: 2.4rem;
+    color: #00ffcc;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
+    margin-top: 0;
+    margin-bottom: 35px; /* 下部との余白を調整 */
+}
+
+/* 2x2のグリッド配置 */
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px; /* 隙間を広げてより大きく見せる */
+    width: 100%;
+    max-width: 400px; /* グリッド全体のサイズアップ */
+}
+
+/* ゲーム1つ分をまとめる枠 */
+.game-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* ★アイコンを入れるBOX型ボタンを拡大 */
+.game-box {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: none;
+    border-radius: 24px; /* 角丸も少し滑らかに */
+    background-color: #1e2230;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.game-item:hover .game-box {
+    transform: translateY(-5px);
+}
+
+/* ★ゲームアイコンの絵文字を大きく変更 */
+.game-box .emoji {
+    font-size: 4rem; /* 3rem -> 4rem に拡大 */
+}
+
+/* Boxの下に記載するゲーム名 */
+.game-name {
+    margin-top: 12px;
+    font-size: 1.2rem; /* 少し大きく */
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+}
+
+.game-item:hover .game-name {
+    color: #00ffcc;
+}
+
+/* 個別のネオンカラーエフェクト */
+.btn-race { border-bottom: 5px solid #ff0055; }
+.game-item:hover .btn-race { box-shadow: 0 5px 25px rgba(255, 0, 85, 0.5); }
+
+.btn-dice { border-bottom: 5px solid #ffcc00; }
+.game-item:hover .btn-dice { box-shadow: 0 5px 25px rgba(255, 204, 0, 0.5); }
+
+.btn-janken { border-bottom: 5px solid #00ff66; }
+.game-item:hover .btn-janken { box-shadow: 0 5px 25px rgba(0, 255, 102, 0.5); }
+
+.btn-locked {
+    border-bottom: 5px solid #475569;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
